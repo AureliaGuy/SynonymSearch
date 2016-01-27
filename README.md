@@ -1,0 +1,2 @@
+# SynonymSearch
+Finds closest match of words based on inputted description. If user inputs multiple words that are not synonyms, program produces output with closest relationship to highest proportion of provided words. Finds synonyms for words based on user’s response to intended definition and part of speech. Can specify number of synonym levels program will search. This determines how close in meaning the output will be to the original word. 
