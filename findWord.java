@@ -48,6 +48,10 @@ public class Synonyms {
     private static HashMap<Integer, HashSet<String>> synonymRecord;
     private static HashMap<Integer, HashSet<String>> synonymDefRecord;
 
+    /**
+     * Class contructor initializes and deserializes data structures that will be used throughout program. 
+     * Contructs files that serialized data structures will be stored in.
+     **/
     public Synonyms() {
         type = "";
         maxCount = Integer.MIN_VALUE;
@@ -65,14 +69,9 @@ public class Synonyms {
         synonymDocFile = new File("synonymDoc.txt");
         notValidSearchFile = new File("notValidSearch");
         savedDefinitions = new HashMap<String, String[]>();
-        //savedWords = new HashMap<String, HashSet<String>>();
         if (notValidSearchFile.exists()) {
             notValidSearch = deserialize(notValidSearchFile);
         } 
-        // if (synonymDocFile.exists()) {
-        //     synonymDoc = deserialize(synonymDocFile);
-        // }
-        // serialize(synonymDocFile, synonymDoc);
         if (noDefinitionFile.exists()) {
             noDefinition = deserialize(noDefinitionFile);
         }
@@ -88,6 +87,11 @@ public class Synonyms {
         words = new HashMap<String, Integer>();
         MAXNUMBER = 10;
     }
+    /**
+     * Main method of program. Still includes tester case used when experimenting with improving search accuracy.
+     * Initial check for word frequency list used in program. Switch statement with cases for definition search, 
+     * synonym search, and closest-match searches.
+     **/
     public static void main(String[] args) throws Exception {
         Synonyms s = new Synonyms();
         savedWiki = new File("savedWiki.txt");
@@ -209,6 +213,9 @@ public class Synonyms {
         serialize(savedDefFile, savedDefWords);
         serialize(noDefinitionFile, noDefinition);
     }
+    /**
+     * Method calls synonym method and prints out the resulting words returned.
+     **/
     public static void callSynonyms(String[] words) throws Exception {
         seen.add(words[0]);
         HashMap<String, HashMap<Integer, HashSet<String>>> defMap = new HashMap<String, HashMap<Integer, HashSet<String>>>();
@@ -218,6 +225,9 @@ public class Synonyms {
             System.out.println(pq.peek().word() + " " + pq.poll().val());
         }
     }
+    /**
+     * Method calls findMatch which returns the words that have the most synonyms in common with word.
+     **/
     public static void callMatch(String[] words) throws Exception {
         HashSet<String> startWords = new HashSet<String>();
         PriorityQueue<MatchNode> pq =  new PriorityQueue<MatchNode>(MAXNUMBER);
@@ -262,6 +272,9 @@ public class Synonyms {
         }
         return count;
     }
+    /**
+     * Serialize the synonyms and definitions of words so that we do not have to search for them more than once.
+     **/
     public static <K> void serialize(File chosenFile, K obj) {
         FileOutputStream stream;
         ObjectOutputStream objectStream;
@@ -289,6 +302,10 @@ public class Synonyms {
         }
         return null;
     }
+    /**
+     * First user interface increases accuracy of search by asking user what particular description of the word
+     * he or she is looking for
+     **/
     public static HashSet<String> firstUserInterface(String word) throws Exception {
         String[] exempt = {"a", "the", "and", "or", "of", "in", "to", "his", "her", "she", "him", "them", "there", 
         "their", "they're", "is", "was", "were", "when", "then", "than", "that", "this", "from", "has", "be", "been", 
@@ -338,7 +355,9 @@ public class Synonyms {
             }
         }
         return syn;
-    
+    /**
+     * Refines the user's search by only adding a synonym if it is close in definition to the desired description.
+     **/
     public static HashSet<String> refinedSearch(String word, HashSet<String> description, HashMap<String, HashMap<Integer, HashSet<String>>> defMap) throws Exception {
         Document document = new Document("");
         HashSet<String> syn = new HashSet<String>();
@@ -350,7 +369,7 @@ public class Synonyms {
         }
         return syn;
     }
-
+/** Increases the accuracy of the search by asking the user what form of the word he or she is looking for a synonym for. **/
   public static HashSet<String> userInterface(PriorityQueue<MatchNode> direct, HashMap<String, HashSet<String>> directSynonyms) throws Exception {
         System.out.println(direct.size());
         String first = direct.poll().word();
@@ -444,9 +463,9 @@ public class Synonyms {
         }
         return rightSynon;
     }
+    
     /** Retrieve thesaurus webpage and parse text from page. 
       * If not in "section", i.e. not an antonym, return minimum priority queue ordered by frequency weights **/
-
     public static PriorityQueue<MatchNode> findSynonyms(String word, String selectedWord, HashMap<String, HashSet<String>> directSynonyms,
                                                 int count, int maximumCount, PriorityQueue<MatchNode> topChoices, HashMap<String, HashMap<Integer, HashSet<String>>> defMap) throws Exception{
         
@@ -527,6 +546,7 @@ public class Synonyms {
         }
         return topChoices;
     }
+    /** Method used to print out the options for the synonyms **/
     public static void printOptions(HashSet<String> set, String word) {
         int count = 0;
         for (String s: set) {
@@ -544,6 +564,7 @@ public class Synonyms {
         }
         System.out.println(")");
     }
+    /** Retrieves the synonyms for the word from thesaurus.com **/
     public static HashSet<String> thesaurus(String selectedWord, HashSet<String> syn) throws Exception {
         try {
             if (savedWords.containsKey(selectedWord)) {
@@ -571,11 +592,11 @@ public class Synonyms {
         }
         return syn;
     }
-    /** Go in depth of 2 looking for word with most of selectedWords as synonyms
-      * Start by searching selectedWords.
-      * Up to //5// selectedWords
-      * If find none, call findSynonyms on selectedWords, returning the highest weighted terms
-      * from the lists, with depth of 2. (3 starts to move too far away from words themselves).**/
+    /** 
+     * Go in depth of 2 looking for word with most of selectedWords as synonyms. Start by searching selectedWords.
+     * If find none, call findSynonyms on selectedWords, returning the highest weighted terms. from the lists, 
+     * with depth of 2. A depth of 3 starts to move too far away from the words themselves.
+     **/
     public static PriorityQueue<MatchNode> findMatch(HashSet<String> startWords, String selectedWord, 
                                             String[] selectedWords, int count, PriorityQueue<MatchNode> topChoices) throws Exception{
         if (count < 2) {
@@ -616,6 +637,7 @@ public class Synonyms {
         }
         return topChoices;
     }
+    /** Converts JSOUP elemets to a hashset **/
     public static HashSet<String> elementsToHashSet(Elements elements) {
         HashSet<String> wordList = new HashSet<String>();
         for (int i = 0; i < elements.size(); i ++) {
@@ -623,6 +645,7 @@ public class Synonyms {
         }
         return wordList;
     }
+    /** Method designed to return synonyms considered to be of a difficult level. **/
     public static PriorityQueue<MatchNode> intelligentSynonyms(String word, String selectedWord, 
                                                 int count, int maxCount, PriorityQueue<MatchNode> topChoices) throws Exception {
         if (count < maxCount) {
@@ -709,23 +732,7 @@ public class Synonyms {
             type = answer;
         }
     }
-    /** get definition of word. Check how similar definition is to "def". Find synonyms. */ 
-    /////This is maaajjjoooorrrr hole in program!!! Need to figure out how to consider the words that are included in /exempt/
-    /////The different cases---- ie, with ---- filled with glee = happy ---- If you looked up "glee", would find happy, buuttt for the initial 
-    //User interface question, you may confuse the user by asking them which of the words are most similar and the options are:
-    //// ---- A)full B) whole --- or the like JUST because it is looking at the word "filled" in the definition
-    ///// ---- even if it is cleared up after, will muddle the first interface and may prevent the closest word from even being an option
-    ////// ---- The word after /with/ is important word
-    ///// Another simple example --- full of glee = happy ---- the "of" means that glee is the important word to start search
-    ///// ----- the word after /of/ is important word
-    ///// happier than most --- the /first/ word is the important one
-    ///Okay, you need to focus on refining this. User error is the only reason that this would be important. When you are trying to think of a word, you
-    ////will not be able to think of its exact definition. Ideas to make the guess more likely to locate a positive result:
-        /////the "exempt word" that have been taken out of the algorithm are important. They show the relationship between the words. 
-        /////examples of exempt words:
-            ////"without" + care. ---- if you see without, then the word after turns negative
-            /////"as", "by", "with"
-    
+    /** get definition of word. Check how similar definition is to "def". Find synonyms. **/ 
     public static PriorityQueue<MatchNode> definition(PriorityQueue<MatchNode> topChoices, String[] def) throws Exception {
         String[] exempt = {"a", "the", "and", "or", "of", "in", "to", "his", "her", "she", "him", "them", "there", 
         "their", "they're", "is", "was", "were", "when", "then", "than", "that", "this", "from", "has", "be", "been", 
@@ -772,7 +779,7 @@ public class Synonyms {
              HashSet<String> wordList = new HashSet<String>();
              HashSet<String> a = new HashSet<String>();
              HashSet<String> syn = new HashSet<String>();
-             //Must consider antonyms of words if preceded by one of these words. 
+             /** Must consider antonyms of words if preceded by one of these words. **/
              if (def[i].equals(",")) {
                  isAntonym = false;
              }
@@ -794,7 +801,7 @@ public class Synonyms {
         HashSet<String> exemptWords = new HashSet<String>(Arrays.asList(exempt));
         return topChoices;
     }
-
+    /** Record the synonym options. **/
     public static void recordSynonyms(String s, int count) throws Exception {
         if (count < 2) {
             seen.add(s);
@@ -831,7 +838,7 @@ public class Synonyms {
             synonymRecord.put(count, synonyms);
         }
     }
-
+    /** Save the synonym options for a word **/
     public static void recordSynonymOptions(String s, int count) throws Exception {
         if (count < 2) {
             seen.add(s);
@@ -863,9 +870,9 @@ public class Synonyms {
             synonymDefRecord.put(count, synonyms);
         }
     }
-    /** input: def is the description that we are looking for
-      * takes in word and looks at all of the descriptions of the word. 
-      * Chooses one with highest count and makes that the description. Returns that element **/
+    /** Input: def is the description that we are looking for.
+      * Takes in word and looks at all of the descriptions of the word. 
+      * Chooses one with highest count and makes that the description. Returns that element. **/
     public static Element findBestDef(String word, HashSet<String> def, HashMap<String, HashMap<Integer, HashSet<String>>> defMap) throws Exception {
         String[] exempt = {"a", "the", "and", "or", "of", "in", "to", "his", "her", "she", "him", "them", "there", 
         "their", "they're", "is", "was", "were", "when", "then", "than", "that", "this", "from", "has", "be", "been", 
@@ -903,10 +910,6 @@ public class Synonyms {
         for (String s: defWords) {
             if (!noDefinition.contains(s)) {
                 try {
-                    /** if (s.equals("with")) {  
-                         countWeight += 100;
-                         hasExempt = true; //Mimicks taking the "exemptWords" into account
-                        } **/
                     HashSet<String> synonyms = new HashSet<String>();
                     HashSet<String> wo = new HashSet<String>();
                     HashSet<String> ant = new HashSet<String>();
@@ -923,7 +926,6 @@ public class Synonyms {
                                 /** if the word has a word in its definition which is a direct synonym
                                 * of one of the defined words, add a weight of 50. **/ 
                                 if (definedWords.get(key).get(0).contains(s)) {
-                                    //System.out.println(key + " " + s);
                                     countWeight += 100;
                                     valid = true;
                                 }
@@ -966,11 +968,11 @@ public class Synonyms {
                 }  
             }
         }
-        /**scaling countWeight to adjust for the size of the definition. If the definition is short, then numberSimilar
+        /**Scaling countWeight to adjust for the size of the definition. If the definition is short, then numberSimilar
          * will be smaller, but this will be adjusted for by the ratio of the original definition size to the size of the definition (will be larger).
          * If there are many words that are similar to the original definition, but the size the of this definition is much larger than the original one, 
          * then countWeight will be decreased by the ration. However, if the size of the definition is similar to the original one, then countWeight will be
-         * scaled by the number of similar words with the original definition. */
+         * scaled by the number of similar words with the original definition. **/
         countWeight *= Math.max(1, numberSimilar) * (definedWords.keySet().size() / (double) defWords.length);
         return countWeight;
     }
@@ -1055,7 +1057,7 @@ public class Synonyms {
         }
         return topChoices;
     }
-    
+    /** Create Comparable class to compare MatchNode by weight so as to sort words by corresponding frequency. **/
     private static class MatchNode implements Comparable<MatchNode>{
         private int val;
         private String word;
